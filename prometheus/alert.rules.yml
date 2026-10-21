@@ -1,0 +1,29 @@
+groups:
+  - name: placement_system_alerts
+    rules:
+      - alert: ServiceDown
+        expr: up{job="placement_app"} == 0
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "Placement Management Web Service is DOWN"
+          description: "Target {{ $labels.instance }} of job {{ $labels.job }} is unreachable for more than 30 seconds."
+
+      - alert: HighHttp5xxErrors
+        expr: sum(rate(flask_http_request_total{status=~"5.."}[2m])) > 0 or sum(rate(http_requests_total{status=~"5.."}[2m])) > 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High 5xx Server Error Rate"
+          description: "The application is returning 5xx HTTP server errors."
+
+      - alert: HighLatency
+        expr: flask_http_request_duration_seconds{quantile="0.95"} > 2.0
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Elevated Response Latency"
+          description: "95th percentile request latency exceeds 2 seconds."
