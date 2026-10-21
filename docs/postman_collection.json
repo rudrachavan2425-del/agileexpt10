@@ -1,0 +1,100 @@
+{
+  "info": {
+    "_postman_id": "a9d7023c-5891-4cf1-85b9-182390f7a012",
+    "name": "Placement Management System DevOps API",
+    "description": "Postman API test suite for health, metrics, authentication, and job listings.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Health Check Endpoint",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5000/health",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5000",
+          "path": ["health"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Prometheus Metrics Endpoint",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5000/metrics",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5000",
+          "path": ["metrics"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Public Landing Page",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5000/",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5000",
+          "path": [""]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Student Login Page",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5000/auth/login",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5000",
+          "path": ["auth", "login"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Node Exporter Telemetry",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:9100/metrics",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "9100",
+          "path": ["metrics"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Prometheus Targets API",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:9090/api/v1/targets",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "9090",
+          "path": ["api", "v1", "targets"]
+        }
+      },
+      "response": []
+    }
+  ]
+}

@@ -1,29 +1,44 @@
 groups:
   - name: placement_system_alerts
     rules:
-      - alert: ServiceDown
+      # Rule 1: Application Down Alert
+      # Triggers when the Flask web application container is stopped or unreachable
+      - alert: ApplicationDown
         expr: up{job="placement_app"} == 0
+        for: 1m  # Note: Can be reduced to 10s-30s during viva/lab demo for quick firing
+        labels:
+          severity: critical
+        annotations:
+          summary: "Placement Management Web Application is DOWN"
+          description: "Target {{ $labels.instance }} of job {{ $labels.job }} is unreachable for more than 1 minute."
+
+      # Rule 2: High CPU Utilization Alert
+      # Triggers when host CPU usage exceeds 80%
+      - alert: HighCpuUsage
+        expr: 100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[1m])) * 100) > 80
+        for: 5m  # Note: Lower to 30s during viva/lab demo when running cpu stress test
+        labels:
+          severity: warning
+        annotations:
+          summary: "Host High CPU Utilization Exceeds 80%"
+          description: "CPU usage on {{ $labels.instance }} has exceeded 80% (current: {{ $value }}%) for 5 minutes."
+
+      # Rule 3: High HTTP 5xx Error Rate
+      - alert: HighHttp5xxErrors
+        expr: sum(rate(flask_http_request_total{status=~"5.."}[1m])) > 0
         for: 30s
         labels:
           severity: critical
         annotations:
-          summary: "Placement Management Web Service is DOWN"
-          description: "Target {{ $labels.instance }} of job {{ $labels.job }} is unreachable for more than 30 seconds."
+          summary: "Elevated HTTP 5xx Server Error Rate"
+          description: "Flask application is returning 5xx internal server errors."
 
-      - alert: HighHttp5xxErrors
-        expr: sum(rate(flask_http_request_total{status=~"5.."}[2m])) > 0 or sum(rate(http_requests_total{status=~"5.."}[2m])) > 0
-        for: 1m
-        labels:
-          severity: critical
-        annotations:
-          summary: "High 5xx Server Error Rate"
-          description: "The application is returning 5xx HTTP server errors."
-
+      # Rule 4: High Request Latency (p95)
       - alert: HighLatency
-        expr: flask_http_request_duration_seconds{quantile="0.95"} > 2.0
+        expr: histogram_quantile(0.95, sum(rate(flask_http_request_duration_seconds_bucket[1m])) by (le)) > 2.0
         for: 1m
         labels:
           severity: warning
         annotations:
-          summary: "Elevated Response Latency"
-          description: "95th percentile request latency exceeds 2 seconds."
+          summary: "Elevated p95 Request Latency"
+          description: "95th percentile request latency exceeds 2.0 seconds."

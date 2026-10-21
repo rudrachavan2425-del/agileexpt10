@@ -224,14 +224,48 @@ docker compose -f docker-compose.jenkins.yml up -d --build
 Access Jenkins at [http://localhost:8080](http://localhost:8080).
 
 ### Pipeline Stages:
-1. **Checkout**: Pulls code from SCM repository (`triggers { pollSCM('H/2 * * * *') }`).
+1. **Checkout**: Pulls code from SCM repository (`triggers { githubPush(); pollSCM('H/2 * * * *') }`).
 2. **Setup Virtualenv & Install Dependencies**: Creates isolated virtual environment and installs `requirements.txt`.
-3. **Lint (flake8)**: Validates code formatting, PEP8 compliance, and imports.
-4. **Run Pytest & Coverage**: Executes all 22 tests and archives JUnit XML & coverage XML reports.
-5. **Build Docker Image**: Builds production container tagged with both `${BUILD_NUMBER}` and `latest`.
-6. **Deploy Services**: Orchestrates container rollout using `docker compose up -d --build web prometheus grafana`.
-7. **Smoke Test**: Queries `/health` (verifying `{"status": "ok"}`) and `/metrics` (verifying custom metrics). Fails the build if endpoints fail.
-8. **Post-execution**: Cleans workspace (`cleanWs()`) and logs pipeline success/failure notification.
+3. **Build & Lint**: Validates code formatting and PEP8 standards (`flake8`).
+4. **Automated Tests (Quality Gate)**: Executes all tests (`pytest`). *Strict Rule: If tests fail, pipeline stops immediately and halts deployment.*
+5. **Docker Build**: Builds production container tagged with both `v${BUILD_NUMBER}` and `latest`.
+6. **Docker Hub Push**: Authenticates using Jenkins credentials ID `dockerhub-creds` and pushes `v${BUILD_NUMBER}` and `latest` tags to Docker Hub.
+7. **Deploy Services**: Orchestrates container rollout using `docker compose up -d --build`.
+8. **Smoke Test**: Queries `/health` (verifying `{"status": "ok"}`) and `/metrics` (verifying custom metrics). Fails build if endpoints fail.
+9. **Post-execution**: Cleans workspace (`cleanWs()`) and emits pipeline success/failure notification.
+
+---
+
+## 9. Prometheus Alerting Rules & Demonstration
+
+Alert rules are defined in `prometheus/alert.rules.yml` and loaded automatically by Prometheus:
+
+| Alert Name | Condition | Severity | Description |
+| :--- | :--- | :--- | :--- |
+| **ApplicationDown** | `up{job="placement_app"} == 0` for 1m (or 30s) | Critical | Triggered when the web application container stops or crashes. |
+| **HighCpuUsage** | `CPU > 80%` for 5m (or 30s) | Warning | Host CPU utilization exceeds 80%. |
+| **HighHttp5xxErrors** | `rate(5xx) > 0` for 30s | Critical | Application is emitting server error responses. |
+| **HighLatency** | `p95 latency > 2.0s` for 1m | Warning | 95th percentile response latency exceeds 2 seconds. |
+
+### How to Trigger Alerts During Live Demo:
+1. **Trigger Application Down Alert**:
+   ```bash
+   docker stop placement_web
+   ```
+   Open `http://localhost:9090/alerts` and watch `ApplicationDown` transition to **FIRING (Red)**! Restart with `docker start placement_web`.
+2. **Trigger High CPU Alert**:
+   ```bash
+   docker run --rm -it progrium/stress --cpu 4 --timeout 45s
+   ```
+   Observe the CPU gauge on Grafana spike and the `HighCpuUsage` alert fire in Prometheus.
+
+---
+
+## 10. Supporting Documentation & Guides
+- **12-Step Live Demo Script**: [docs/demo-script.md](file:///C:/Users/Rudra/.gemini/antigravity-ide/scratch/placement-management-system/docs/demo-script.md)
+- **Viva & Screenshots Checklist**: [docs/screenshots-checklist.md](file:///C:/Users/Rudra/.gemini/antigravity-ide/scratch/placement-management-system/docs/screenshots-checklist.md)
+- **Postman API Test Collection**: [docs/postman_collection.json](file:///C:/Users/Rudra/.gemini/antigravity-ide/scratch/placement-management-system/docs/postman_collection.json)
+
 
 ---
 

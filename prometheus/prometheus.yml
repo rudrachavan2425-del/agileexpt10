@@ -15,3 +15,12 @@ scrape_configs:
         labels:
           application: 'placement-management-system'
           environment: 'production'
+
+  - job_name: 'node_exporter'
+    scrape_interval: 5s
+    scrape_timeout: 4s
+    static_configs:
+      - targets: ['node-exporter:9100']
+        labels:
+          application: 'node-exporter'
+          environment: 'production'
