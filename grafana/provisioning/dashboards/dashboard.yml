@@ -1,0 +1,12 @@
+apiVersion: 1
+
+providers:
+  - name: 'Placement Dashboards'
+    orgId: 1
+    folder: 'Placement System'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 5
+    allowUiUpdates: true
+    options:
+      path: /etc/grafana/provisioning/dashboards/placement-dashboard.json

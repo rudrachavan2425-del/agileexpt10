@@ -1,0 +1,28 @@
+services:
+  jenkins:
+    build:
+      context: ./jenkins
+      dockerfile: Dockerfile
+    image: placement-jenkins:lts
+    container_name: placement_jenkins
+    restart: unless-stopped
+    user: root  # allows accessing the mounted docker.sock socket
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    environment:
+      - JAVA_OPTS=-Djenkins.install.runSetupWizard=true
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - placement-net
+
+networks:
+  placement-net:
+    external: true
+    name: placement-net
+
+volumes:
+  jenkins_home:
+    name: placement_jenkins_home
