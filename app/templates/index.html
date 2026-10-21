@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome | Placement Management System{% endblock %}
+
+{% block content %}
+<div class="row align-items-center py-5 rounded-4 hero-gradient px-4 px-lg-5 mb-5 shadow">
+  <div class="col-lg-7 text-white py-3">
+    <span class="badge bg-primary-subtle text-primary fw-semibold px-3 py-2 rounded-pill mb-3">
+      <i class="bi bi-stars me-1"></i> Next-Gen Campus Placements
+    </span>
+    <h1 class="display-4 fw-bold mb-3">Empowering Careers, Accelerating Hirings</h1>
+    <p class="lead text-white-50 mb-4">
+      A centralized, high-performance platform connecting student talent with industry-leading technology and finance enterprises. Real-time application tracking, automated eligibility validation, and comprehensive audit metrics.
+    </p>
+    <div class="d-flex flex-wrap gap-3">
+      <a href="{{ url_for('auth.login') }}" class="btn btn-light btn-lg px-4 fw-semibold text-primary shadow-sm">
+        <i class="bi bi-box-arrow-in-right me-1"></i> Get Started / Log In
+      </a>
+      <a href="{{ url_for('auth.register_student') }}" class="btn btn-outline-light btn-lg px-4">
+        <i class="bi bi-mortarboard me-1"></i> Student Sign Up
+      </a>
+      <a href="{{ url_for('auth.register_company') }}" class="btn btn-outline-light btn-lg px-4">
+        <i class="bi bi-building me-1"></i> Recruiter Registration
+      </a>
+    </div>
+  </div>
+  <div class="col-lg-5 text-center mt-4 mt-lg-0">
+    <div class="card bg-white text-dark p-4 shadow-lg text-start">
+      <h5 class="fw-bold mb-3 border-bottom pb-2"><i class="bi bi-key-fill text-primary me-2"></i>Quick Demo Credentials</h5>
+      <div class="mb-3">
+        <span class="badge bg-danger mb-1">Admin Portal</span>
+        <div class="small font-monospace bg-light p-2 rounded">
+          <strong>Email:</strong> admin@placement.com<br>
+          <strong>Password:</strong> Admin@123
+        </div>
+      </div>
+      <div class="mb-3">
+        <span class="badge bg-primary mb-1">Company Recruiter</span>
+        <div class="small font-monospace bg-light p-2 rounded">
+          <strong>Email:</strong> recruiting@google.com<br>
+          <strong>Password:</strong> Company@123
+        </div>
+      </div>
+      <div>
+        <span class="badge bg-success mb-1">Student Candidate</span>
+        <div class="small font-monospace bg-light p-2 rounded">
+          <strong>Email:</strong> aarav.sharma@campus.edu<br>
+          <strong>Password:</strong> Student@123
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4 mb-5">
+  <div class="col-md-4">
+    <div class="card h-100 card-hover p-4 text-center">
+      <div class="stat-icon bg-primary-subtle text-primary mx-auto mb-3">
+        <i class="bi bi-mortarboard-fill"></i>
+      </div>
+      <h4 class="fw-bold">For Students</h4>
+      <p class="text-muted">
+        Create and update your profile, upload your verified PDF resume, explore curated job opportunities, and instantly track application statuses.
+      </p>
+      <div class="mt-auto">
+        <a href="{{ url_for('auth.register_student') }}" class="btn btn-outline-primary w-100">Student Portal</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card h-100 card-hover p-4 text-center">
+      <div class="stat-icon bg-success-subtle text-success mx-auto mb-3">
+        <i class="bi bi-building"></i>
+      </div>
+      <h4 class="fw-bold">For Recruiters</h4>
+      <p class="text-muted">
+        Publish rich job openings, specify CGPA cutoff criteria, review applicants, download resumes, and seamlessly shortlist or select candidates.
+      </p>
+      <div class="mt-auto">
+        <a href="{{ url_for('auth.register_company') }}" class="btn btn-outline-success w-100">Recruiter Portal</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card h-100 card-hover p-4 text-center">
+      <div class="stat-icon bg-warning-subtle text-warning mx-auto mb-3">
+        <i class="bi bi-shield-lock-fill"></i>
+      </div>
+      <h4 class="fw-bold">For Administration</h4>
+      <p class="text-muted">
+        Total placement oversight, company vetting, student account management, cross-department analytics, and live Prometheus operational metrics.
+      </p>
+      <div class="mt-auto">
+        <a href="{{ url_for('auth.login') }}" class="btn btn-outline-warning w-100">Admin Login</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

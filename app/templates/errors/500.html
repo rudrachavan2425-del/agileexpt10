@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}Internal Server Error (500) | Placement Management System{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center text-center py-5">
+  <div class="col-md-6">
+    <div class="display-1 fw-bold text-danger mb-3">500</div>
+    <h3 class="fw-bold mb-3">Internal Server Error</h3>
+    <p class="text-muted mb-4">
+      An unexpected condition was encountered on the server. Our engineering telemetry and Prometheus alerts have captured this incident.
+    </p>
+    <a href="{{ url_for('index') }}" class="btn btn-primary px-4">Return Home</a>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Companies | Admin Portal{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h2 class="fw-bold mb-1">Company Partnerships</h2>
+    <p class="text-muted small mb-0">Approve registrations, manage partner profiles, and toggle account activation</p>
+  </div>
+  <div class="btn-group" role="group">
+    <a href="{{ url_for('admin.companies', status='all') }}" class="btn btn-sm {{ 'btn-primary' if current_filter == 'all' else 'btn-outline-secondary' }}">All</a>
+    <a href="{{ url_for('admin.companies', status='pending') }}" class="btn btn-sm {{ 'btn-warning' if current_filter == 'pending' else 'btn-outline-secondary' }}">Pending</a>
+    <a href="{{ url_for('admin.companies', status='approved') }}" class="btn btn-sm {{ 'btn-success' if current_filter == 'approved' else 'btn-outline-secondary' }}">Approved</a>
+    <a href="{{ url_for('admin.companies', status='rejected') }}" class="btn btn-sm {{ 'btn-danger' if current_filter == 'rejected' else 'btn-outline-secondary' }}">Rejected</a>
+  </div>
+</div>
+
+<div class="card shadow-sm">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead>
+          <tr>
+            <th>Company</th>
+            <th>Domain & Contact</th>
+            <th>Jobs Posted</th>
+            <th>Approval</th>
+            <th>Account Status</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for c in companies %}
+            <tr>
+              <td>
+                <div class="fw-bold fs-6">{{ c.company_name }}</div>
+                <div class="small text-muted">{{ c.user.email }}</div>
+                {% if c.website %}
+                  <a href="{{ c.website }}" target="_blank" class="small text-decoration-none text-primary">{{ c.website }}</a>
+                {% endif %}
+              </td>
+              <td>
+                <div><span class="badge bg-light text-dark border">{{ c.industry or 'Technology' }}</span></div>
+                <div class="small text-muted mt-1">Contact: {{ c.contact_person or 'N/A' }} | {{ c.phone or 'N/A' }}</div>
+              </td>
+              <td>
+                <span class="badge bg-secondary-subtle text-secondary">{{ c.jobs.count() }} Jobs</span>
+              </td>
+              <td>
+                {% if c.approval_status == 'approved' %}
+                  <span class="badge bg-success-subtle text-success border border-success-subtle"><i class="bi bi-check-circle me-1"></i> Approved</span>
+                {% elif c.approval_status == 'pending' %}
+                  <span class="badge bg-warning-subtle text-warning border border-warning-subtle"><i class="bi bi-clock me-1"></i> Pending Review</span>
+                {% else %}
+                  <span class="badge bg-danger-subtle text-danger border border-danger-subtle"><i class="bi bi-x-circle me-1"></i> Rejected</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if c.user.is_active %}
+                  <span class="badge bg-success">Active</span>
+                {% else %}
+                  <span class="badge bg-secondary">Deactivated</span>
+                {% endif %}
+              </td>
+              <td class="text-end">
+                <div class="d-inline-flex gap-1">
+                  {% if c.approval_status != 'approved' %}
+                    <form method="POST" action="{{ url_for('admin.approve_company', company_id=c.id) }}" class="d-inline">
+                      <button type="submit" class="btn btn-sm btn-outline-success" title="Approve Company">
+                        <i class="bi bi-check-lg"></i>
+                      </button>
+                    </form>
+                  {% endif %}
+                  {% if c.approval_status != 'rejected' %}
+                    <form method="POST" action="{{ url_for('admin.reject_company', company_id=c.id) }}" class="d-inline">
+                      <button type="submit" class="btn btn-sm btn-outline-danger" title="Reject Company">
+                        <i class="bi bi-x-lg"></i>
+                      </button>
+                    </form>
+                  {% endif %}
+                  <form method="POST" action="{{ url_for('admin.toggle_company_status', company_id=c.id) }}" class="d-inline">
+                    <button type="submit" class="btn btn-sm {{ 'btn-outline-warning' if c.user.is_active else 'btn-outline-info' }}" title="{{ 'Deactivate Account' if c.user.is_active else 'Activate Account' }}">
+                      <i class="bi {{ 'bi-pause-circle' if c.user.is_active else 'bi-play-circle' }}"></i>
+                    </button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          {% else %}
+            <tr>
+              <td colspan="6" class="text-center py-4 text-muted">No companies found matching the filter.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

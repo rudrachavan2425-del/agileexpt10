@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}All Campus Jobs | Admin Portal{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h2 class="fw-bold mb-1">Campus Placement Job Postings</h2>
+    <p class="text-muted small mb-0">Overview of all active and past job postings across registered hiring partners</p>
+  </div>
+</div>
+
+<div class="card shadow-sm">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead>
+          <tr>
+            <th>Job Title & Location</th>
+            <th>Company</th>
+            <th>Package (CTC)</th>
+            <th>Min CGPA</th>
+            <th>Skills Required</th>
+            <th>Deadline</th>
+            <th>Status</th>
+            <th>Applicants</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for j in jobs %}
+            <tr>
+              <td>
+                <div class="fw-bold">{{ j.title }}</div>
+                <div class="small text-muted"><i class="bi bi-geo-alt me-1"></i>{{ j.location }}</div>
+              </td>
+              <td>
+                <strong>{{ j.company.company_name }}</strong>
+              </td>
+              <td>
+                <span class="badge bg-success-subtle text-success fs-6 fw-bold border border-success-subtle">
+                  {{ j.package_lpa }} LPA
+                </span>
+              </td>
+              <td>
+                <span class="badge bg-light text-dark border">{{ j.min_cgpa }} CGPA</span>
+              </td>
+              <td>
+                <div class="small text-truncate" style="max-width: 200px;" title="{{ j.required_skills }}">
+                  {{ j.required_skills }}
+                </div>
+              </td>
+              <td>
+                <div class="small {{ 'text-danger fw-bold' if j.is_expired() else 'text-dark' }}">
+                  {{ j.deadline.strftime('%Y-%m-%d') }}
+                  {% if j.is_expired() %}
+                    <span class="badge bg-danger-subtle text-danger ms-1">Expired</span>
+                  {% endif %}
+                </div>
+              </td>
+              <td>
+                {% if j.is_active and not j.is_expired() %}
+                  <span class="badge bg-success">Active</span>
+                {% else %}
+                  <span class="badge bg-secondary">Closed</span>
+                {% endif %}
+              </td>
+              <td>
+                <span class="badge bg-primary rounded-pill">{{ j.applications.count() }}</span>
+              </td>
+            </tr>
+          {% else %}
+            <tr>
+              <td colspan="8" class="text-center py-4 text-muted">No jobs posted yet.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

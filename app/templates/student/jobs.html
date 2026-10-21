@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}Explore Jobs | Student Portal{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+  <div>
+    <h2 class="fw-bold mb-1">Campus Placement Opportunities</h2>
+    <p class="text-muted small mb-0">Browse open roles from verified recruiting partners</p>
+  </div>
+  <div class="badge bg-light text-dark border p-2">
+    Your CGPA: <strong class="text-primary">{{ profile.cgpa }}</strong>
+  </div>
+</div>
+
+<!-- Search & Filters -->
+<div class="card p-3 mb-4 shadow-sm bg-white">
+  <form method="GET" class="row g-2 align-items-center">
+    <div class="col-md-5">
+      <div class="input-group">
+        <span class="input-group-text"><i class="bi bi-search"></i></span>
+        <input type="text" name="q" value="{{ search_q }}" class="form-control" placeholder="Search by title, skills (e.g. Python, Docker)...">
+      </div>
+    </div>
+    <div class="col-md-3">
+      <input type="text" name="location" value="{{ location_filter }}" class="form-control" placeholder="Location (e.g. Bengaluru, Remote)...">
+    </div>
+    <div class="col-md-2">
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" name="eligible_only" value="1" id="eligibleCheck" {{ 'checked' if eligible_only else '' }} onchange="this.form.submit()">
+        <label class="form-check-label small fw-semibold" for="eligibleCheck">
+          Eligible Only
+        </label>
+      </div>
+    </div>
+    <div class="col-md-2 d-flex gap-1">
+      <button type="submit" class="btn btn-primary flex-grow-1">Filter</button>
+      <a href="{{ url_for('student.jobs') }}" class="btn btn-outline-secondary">Reset</a>
+    </div>
+  </form>
+</div>
+
+<!-- Job Cards Grid -->
+<div class="row g-4">
+  {% for job in jobs %}
+    {% set is_applied = job.id in applied_job_ids %}
+    {% set meets_cgpa = profile.cgpa >= job.min_cgpa %}
+    {% set is_expired = job.is_expired() %}
+    {% set is_eligible = meets_cgpa and not is_expired %}
+
+    <div class="col-md-6 col-lg-4">
+      <div class="card h-100 card-hover shadow-sm d-flex flex-column">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-start mb-2">
+            <div>
+              <span class="badge bg-light text-primary border fw-semibold">{{ job.company.company_name }}</span>
+            </div>
+            <span class="badge bg-success-subtle text-success fs-6 fw-bold border border-success-subtle">
+              {{ job.package_lpa }} LPA
+            </span>
+          </div>
+
+          <h5 class="fw-bold mb-1">{{ job.title }}</h5>
+          <div class="small text-muted mb-3"><i class="bi bi-geo-alt me-1"></i>{{ job.location }}</div>
+
+          <div class="mb-3">
+            <span class="badge bg-light text-dark border me-1"><i class="bi bi-mortarboard me-1"></i>Min CGPA: {{ job.min_cgpa }}</span>
+            <span class="badge bg-light text-dark border"><i class="bi bi-calendar-event me-1"></i>Deadline: {{ job.deadline.strftime('%Y-%m-%d') }}</span>
+          </div>
+
+          <p class="text-muted small mb-3 text-truncate-3" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
+            {{ job.description }}
+          </p>
+
+          <div class="mb-3">
+            <div class="small fw-semibold text-muted mb-1">Key Skills:</div>
+            <div class="small text-truncate" title="{{ job.required_skills }}">
+              <span class="badge bg-secondary-subtle text-secondary">{{ job.required_skills }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-footer bg-white border-top p-3 mt-auto">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              {% if is_applied %}
+                <span class="badge bg-info-subtle text-info border border-info-subtle"><i class="bi bi-check2 me-1"></i> Applied</span>
+              {% elif is_expired %}
+                <span class="badge bg-danger-subtle text-danger"><i class="bi bi-x-circle me-1"></i> Closed</span>
+              {% elif not meets_cgpa %}
+                <span class="badge bg-warning-subtle text-warning"><i class="bi bi-exclamation-triangle me-1"></i> CGPA &lt; {{ job.min_cgpa }}</span>
+              {% else %}
+                <span class="badge bg-success-subtle text-success"><i class="bi bi-check-circle me-1"></i> Eligible</span>
+              {% endif %}
+            </div>
+            <a href="{{ url_for('student.job_details', job_id=job.id) }}" class="btn btn-sm btn-outline-primary">
+              Details & Apply &rarr;
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% else %}
+    <div class="col-12 text-center py-5">
+      <i class="bi bi-search fs-1 text-muted d-block mb-2"></i>
+      <h5>No job postings found</h5>
+      <p class="text-muted">Try clearing search filters or checking back soon.</p>
+      <a href="{{ url_for('student.jobs') }}" class="btn btn-outline-primary btn-sm">Clear Filters</a>
+    </div>
+  {% endfor %}
+</div>
+{% endblock %}

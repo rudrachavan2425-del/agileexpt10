@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+
+{% block title %}Student Dashboard | Placement Management System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+  <div>
+    <h2 class="fw-bold mb-1">Welcome, {{ profile.full_name }}</h2>
+    <p class="text-muted small mb-0">
+      {{ profile.roll_number }} &bull; {{ profile.branch }} &bull; CGPA: <strong class="text-primary">{{ profile.cgpa }}</strong>
+    </p>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="{{ url_for('student.jobs') }}" class="btn btn-primary">
+      <i class="bi bi-search me-1"></i> Browse Open Jobs
+    </a>
+    <a href="{{ url_for('student.profile') }}" class="btn btn-outline-secondary">
+      <i class="bi bi-person me-1"></i> Edit Profile
+    </a>
+  </div>
+</div>
+
+<!-- Profile / Placement Banner -->
+<div class="row g-3 mb-4">
+  <div class="col-md-4">
+    <div class="card stat-card h-100">
+      <div class="d-flex align-items-center justify-content-between">
+        <div>
+          <div class="text-muted small fw-semibold text-uppercase">Placement Status</div>
+          <div class="fs-4 fw-bold mt-1">
+            {% if profile.placement_status == 'placed' %}
+              <span class="text-success"><i class="bi bi-check-circle-fill me-1"></i> Placed</span>
+            {% else %}
+              <span class="text-secondary">In Progress</span>
+            {% endif %}
+          </div>
+        </div>
+        <div class="stat-icon {{ 'bg-success-subtle text-success' if profile.placement_status == 'placed' else 'bg-secondary-subtle text-secondary' }}">
+          <i class="bi {{ 'bi-award-fill' if profile.placement_status == 'placed' else 'bi-hourglass-split' }}"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card stat-card h-100">
+      <div class="d-flex align-items-center justify-content-between">
+        <div>
+          <div class="text-muted small fw-semibold text-uppercase">Total Applications</div>
+          <div class="fs-3 fw-bold mt-1">{{ applications|length }}</div>
+        </div>
+        <div class="stat-icon bg-primary-subtle text-primary">
+          <i class="bi bi-file-earmark-check-fill"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card stat-card h-100">
+      <div class="d-flex align-items-center justify-content-between">
+        <div>
+          <div class="text-muted small fw-semibold text-uppercase">Resume File</div>
+          <div class="mt-1">
+            {% if profile.resume_filename %}
+              <a href="{{ url_for('student.download_resume', filename=profile.resume_filename) }}" target="_blank" class="btn btn-sm btn-outline-success">
+                <i class="bi bi-file-earmark-pdf me-1"></i> View Uploaded PDF
+              </a>
+            {% else %}
+              <a href="{{ url_for('student.profile') }}" class="btn btn-sm btn-warning">
+                <i class="bi bi-upload me-1"></i> Upload Resume PDF
+              </a>
+            {% endif %}
+          </div>
+        </div>
+        <div class="stat-icon bg-info-subtle text-info">
+          <i class="bi bi-file-text-fill"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Recommended / Eligible Jobs -->
+<div class="card mb-4 shadow-sm">
+  <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+    <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-stars text-warning me-2"></i>Recommended Eligible Roles for You</h5>
+    <a href="{{ url_for('student.jobs', eligible_only=1) }}" class="btn btn-sm btn-outline-primary">View All Eligible</a>
+  </div>
+  <div class="card-body p-0">
+    {% if eligible_jobs %}
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead>
+            <tr>
+              <th>Role</th>
+              <th>Company</th>
+              <th>Package</th>
+              <th>Cutoff CGPA</th>
+              <th>Deadline</th>
+              <th class="text-end">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for job in eligible_jobs %}
+              <tr>
+                <td><strong>{{ job.title }}</strong><br><small class="text-muted">{{ job.location }}</small></td>
+                <td>{{ job.company.company_name }}</td>
+                <td><span class="badge bg-success-subtle text-success fs-6 fw-bold border border-success-subtle">{{ job.package_lpa }} LPA</span></td>
+                <td><span class="badge bg-light text-dark border">{{ job.min_cgpa }}</span></td>
+                <td>{{ job.deadline.strftime('%Y-%m-%d') }}</td>
+                <td class="text-end">
+                  <a href="{{ url_for('student.job_details', job_id=job.id) }}" class="btn btn-sm btn-primary">
+                    View & Apply
+                  </a>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="p-4 text-center text-muted">No pending eligible roles found. Browse all jobs to explore open drives!</div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- My Recent Applications -->
+<div class="card shadow-sm">
+  <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+    <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-journal-check text-primary me-2"></i>My Recent Applications</h5>
+    <a href="{{ url_for('student.applications') }}" class="btn btn-sm btn-outline-secondary">View All</a>
+  </div>
+  <div class="card-body p-0">
+    {% if applications %}
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead>
+            <tr>
+              <th>Role & Company</th>
+              <th>Applied Date</th>
+              <th>Status</th>
+              <th>Feedback</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for app in applications[:5] %}
+              <tr>
+                <td>
+                  <strong>{{ app.job.title }}</strong>
+                  <div class="small text-muted">{{ app.job.company.company_name }} &bull; {{ app.job.package_lpa }} LPA</div>
+                </td>
+                <td>{{ app.applied_at.strftime('%Y-%m-%d') }}</td>
+                <td>
+                  <span class="badge badge-status badge-{{ app.status }}">{{ app.status|capitalize }}</span>
+                </td>
+                <td>
+                  <span class="small text-muted">{{ app.feedback or 'Under review by hiring team' }}</span>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="p-4 text-center text-muted">You haven't applied to any roles yet. Check out open jobs and apply!</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

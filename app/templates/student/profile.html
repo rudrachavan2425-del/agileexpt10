@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block title %}My Profile | Student Portal{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="card p-4 p-md-5 shadow-sm">
+      <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+        <div>
+          <h3 class="fw-bold mb-1">My Student Profile</h3>
+          <p class="text-muted small mb-0">Update your contact details, academic branch, CGPA, and PDF resume</p>
+        </div>
+        <div>
+          <span class="badge bg-secondary-subtle text-secondary fs-6">{{ profile.roll_number }}</span>
+        </div>
+      </div>
+
+      <form method="POST" enctype="multipart/form-data" novalidate>
+        {{ form.hidden_tag() }}
+
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            {{ form.full_name.label(class="form-label fw-semibold") }}
+            {{ form.full_name(class="form-control" + (" is-invalid" if form.full_name.errors else "")) }}
+            {% for error in form.full_name.errors %}
+              <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Email Address</label>
+            <input type="text" class="form-control bg-light" value="{{ profile.user.email }}" readonly>
+            <div class="form-text">Email address is managed by campus administrator.</div>
+          </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            {{ form.branch.label(class="form-label fw-semibold") }}
+            {{ form.branch(class="form-select" + (" is-invalid" if form.branch.errors else "")) }}
+            {% for error in form.branch.errors %}
+              <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+          </div>
+          <div class="col-md-3">
+            {{ form.cgpa.label(class="form-label fw-semibold") }}
+            {{ form.cgpa(class="form-control" + (" is-invalid" if form.cgpa.errors else ""), step="0.01") }}
+            {% for error in form.cgpa.errors %}
+              <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+          </div>
+          <div class="col-md-3">
+            {{ form.graduation_year.label(class="form-label fw-semibold") }}
+            {{ form.graduation_year(class="form-control" + (" is-invalid" if form.graduation_year.errors else "")) }}
+            {% for error in form.graduation_year.errors %}
+              <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            {{ form.phone.label(class="form-label fw-semibold") }}
+            {{ form.phone(class="form-control" + (" is-invalid" if form.phone.errors else "")) }}
+            {% for error in form.phone.errors %}
+              <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Placement Status</label>
+            <div>
+              {% if profile.placement_status == 'placed' %}
+                <span class="badge bg-success fs-6"><i class="bi bi-patch-check-fill me-1"></i> Placed Candidate</span>
+              {% else %}
+                <span class="badge bg-secondary fs-6">Unplaced / Actively Seeking</span>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          {{ form.skills.label(class="form-label fw-semibold") }}
+          {{ form.skills(class="form-control" + (" is-invalid" if form.skills.errors else "")) }}
+          <div class="form-text">Comma-separated list of programming languages, frameworks, and proficiencies.</div>
+          {% for error in form.skills.errors %}
+            <div class="invalid-feedback">{{ error }}</div>
+          {% endfor %}
+        </div>
+
+        <div class="mb-4">
+          {{ form.resume.label(class="form-label fw-semibold") }}
+          {{ form.resume(class="form-control" + (" is-invalid" if form.resume.errors else ""), accept=".pdf") }}
+          <div class="form-text">Upload new PDF to update your current resume (Max 5MB).</div>
+          {% if profile.resume_filename %}
+            <div class="mt-2">
+              <span class="small text-muted me-2">Current Resume on file:</span>
+              <a href="{{ url_for('student.download_resume', filename=profile.resume_filename) }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                <i class="bi bi-file-earmark-pdf me-1"></i> Preview Current PDF
+              </a>
+            </div>
+          {% endif %}
+          {% for error in form.resume.errors %}
+            <div class="invalid-feedback">{{ error }}</div>
+          {% endfor %}
+        </div>
+
+        <div class="d-flex gap-2">
+          {{ form.submit(class="btn btn-primary btn-lg flex-grow-1") }}
+          <a href="{{ url_for('student.dashboard') }}" class="btn btn-outline-secondary btn-lg">Back to Dashboard</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

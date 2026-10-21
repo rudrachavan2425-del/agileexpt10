@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}All Applications | Admin Portal{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h2 class="fw-bold mb-1">Placement Applications Audit</h2>
+    <p class="text-muted small mb-0">System-wide log of student job applications and hiring partner evaluations</p>
+  </div>
+</div>
+
+<div class="card p-3 mb-4 shadow-sm bg-white">
+  <div class="d-flex gap-2 flex-wrap align-items-center">
+    <span class="small fw-semibold text-muted me-2">Status Filter:</span>
+    <a href="{{ url_for('admin.applications') }}" class="btn btn-sm {{ 'btn-dark' if not current_status else 'btn-outline-secondary' }}">All</a>
+    <a href="{{ url_for('admin.applications', status='applied') }}" class="btn btn-sm {{ 'btn-info' if current_status == 'applied' else 'btn-outline-info' }}">Applied</a>
+    <a href="{{ url_for('admin.applications', status='shortlisted') }}" class="btn btn-sm {{ 'btn-warning' if current_status == 'shortlisted' else 'btn-outline-warning' }}">Shortlisted</a>
+    <a href="{{ url_for('admin.applications', status='selected') }}" class="btn btn-sm {{ 'btn-success' if current_status == 'selected' else 'btn-outline-success' }}">Selected / Placed</a>
+    <a href="{{ url_for('admin.applications', status='rejected') }}" class="btn btn-sm {{ 'btn-danger' if current_status == 'rejected' else 'btn-outline-danger' }}">Rejected</a>
+  </div>
+</div>
+
+<div class="card shadow-sm">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead>
+          <tr>
+            <th>Application ID</th>
+            <th>Candidate</th>
+            <th>Branch & CGPA</th>
+            <th>Job & Company</th>
+            <th>Package</th>
+            <th>Status</th>
+            <th>Feedback</th>
+            <th>Applied At</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for app in applications %}
+            <tr>
+              <td><code>#APP-{{ app.id }}</code></td>
+              <td>
+                <div class="fw-bold">{{ app.student.full_name }}</div>
+                <div class="small text-muted">{{ app.student.roll_number }}</div>
+              </td>
+              <td>
+                <span class="badge bg-light text-dark border">{{ app.student.branch }}</span>
+                <span class="ms-1 fw-bold text-primary">{{ app.student.cgpa }}</span>
+              </td>
+              <td>
+                <div class="fw-bold">{{ app.job.title }}</div>
+                <div class="small text-muted">{{ app.job.company.company_name }}</div>
+              </td>
+              <td>
+                <span class="badge bg-success-subtle text-success">{{ app.job.package_lpa }} LPA</span>
+              </td>
+              <td>
+                <span class="badge badge-status badge-{{ app.status }}">{{ app.status|capitalize }}</span>
+              </td>
+              <td>
+                <div class="small text-muted" style="max-width: 250px;">{{ app.feedback or 'No remarks recorded' }}</div>
+              </td>
+              <td>
+                <div class="small text-muted">{{ app.applied_at.strftime('%Y-%m-%d %H:%M') }}</div>
+              </td>
+            </tr>
+          {% else %}
+            <tr>
+              <td colspan="8" class="text-center py-4 text-muted">No applications found.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

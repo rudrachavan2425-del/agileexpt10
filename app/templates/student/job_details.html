@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block title %}{{ job.title }} | {{ job.company.company_name }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-9">
+    <div class="mb-3">
+      <a href="{{ url_for('student.jobs') }}" class="btn btn-sm btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i> Back to All Jobs
+      </a>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+      <div class="card-body p-4 p-md-5">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+          <div>
+            <span class="badge bg-primary-subtle text-primary fs-6 mb-2">{{ job.company.company_name }}</span>
+            <h2 class="fw-bold mb-1">{{ job.title }}</h2>
+            <div class="text-muted"><i class="bi bi-geo-alt me-1"></i>{{ job.location }}</div>
+          </div>
+          <div class="text-md-end">
+            <span class="badge bg-success-subtle text-success fs-4 fw-bold border border-success-subtle d-inline-block mb-1">
+              {{ job.package_lpa }} LPA
+            </span>
+            <div class="small text-muted">Annual CTC Package</div>
+          </div>
+        </div>
+
+        <hr class="my-4">
+
+        <!-- Eligibility Matrix Bar -->
+        <div class="card bg-light border-0 p-3 mb-4">
+          <div class="row text-center g-3">
+            <div class="col-sm-4 border-end">
+              <div class="small text-muted fw-semibold">MINIMUM CGPA</div>
+              <div class="fs-5 fw-bold {{ 'text-success' if profile.cgpa >= job.min_cgpa else 'text-danger' }}">
+                {{ job.min_cgpa }}
+                <span class="small fs-6 text-muted fw-normal">(Yours: {{ profile.cgpa }})</span>
+              </div>
+            </div>
+            <div class="col-sm-4 border-end">
+              <div class="small text-muted fw-semibold">DEADLINE</div>
+              <div class="fs-5 fw-bold {{ 'text-danger' if job.is_expired() else 'text-dark' }}">
+                {{ job.deadline.strftime('%Y-%m-%d') }}
+              </div>
+            </div>
+            <div class="col-sm-4">
+              <div class="small text-muted fw-semibold">YOUR ELIGIBILITY</div>
+              <div class="fs-5 fw-bold">
+                {% if application %}
+                  <span class="text-info"><i class="bi bi-check2-circle me-1"></i> Already Applied</span>
+                {% elif job.is_expired() %}
+                  <span class="text-danger"><i class="bi bi-x-circle me-1"></i> Expired</span>
+                {% elif profile.cgpa < job.min_cgpa %}
+                  <span class="text-danger"><i class="bi bi-x-circle me-1"></i> CGPA Ineligible</span>
+                {% else %}
+                  <span class="text-success"><i class="bi bi-check-circle-fill me-1"></i> Fully Eligible</span>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <h5 class="fw-bold">Required Skills & Technologies</h5>
+          <div class="d-flex flex-wrap gap-2 mt-2">
+            {% for skill in job.required_skills.split(',') %}
+              <span class="badge bg-secondary-subtle text-secondary fs-6 py-2 px-3 border">{{ skill.strip() }}</span>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <h5 class="fw-bold">Job Description & Responsibilities</h5>
+          <div class="p-3 bg-white border rounded mt-2" style="white-space: pre-line; line-height: 1.7;">
+            {{ job.description }}
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <h5 class="fw-bold">About {{ job.company.company_name }}</h5>
+          <p class="text-muted">{{ job.company.description or 'A premier corporate hiring partner in our campus placement network.' }}</p>
+          {% if job.company.website %}
+            <a href="{{ job.company.website }}" target="_blank" class="small text-primary text-decoration-none">
+              <i class="bi bi-globe me-1"></i> {{ job.company.website }}
+            </a>
+          {% endif %}
+        </div>
+
+        <!-- Application Action Section -->
+        <div class="card p-4 border-2 {{ 'border-success' if is_eligible and not application else 'border-secondary' }} bg-white">
+          {% if application %}
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+              <div>
+                <h5 class="fw-bold text-success mb-1"><i class="bi bi-check-circle-fill me-2"></i>You applied for this position</h5>
+                <p class="text-muted small mb-0">Application submitted on {{ application.applied_at.strftime('%Y-%m-%d %H:%M') }}</p>
+              </div>
+              <div>
+                <span class="badge badge-status badge-{{ application.status }} fs-6">{{ application.status|capitalize }}</span>
+                <a href="{{ url_for('student.applications') }}" class="btn btn-sm btn-outline-primary ms-2">Track Status</a>
+              </div>
+            </div>
+            {% if application.feedback %}
+              <div class="alert alert-info mt-3 mb-0 small">
+                <strong>Feedback from Recruiter:</strong> {{ application.feedback }}
+              </div>
+            {% endif %}
+          {% elif job.is_expired() %}
+            <div class="alert alert-danger mb-0">
+              <i class="bi bi-calendar-x me-2"></i><strong>Applications Closed:</strong> The deadline for this role was {{ job.deadline.strftime('%Y-%m-%d') }}.
+            </div>
+          {% elif profile.cgpa < job.min_cgpa %}
+            <div class="alert alert-warning mb-0">
+              <i class="bi bi-exclamation-triangle-fill me-2"></i><strong>CGPA Cutoff Ineligibility:</strong> This role requires a minimum CGPA of {{ job.min_cgpa }}. Your current CGPA is {{ profile.cgpa }}.
+            </div>
+          {% elif not job.is_active %}
+            <div class="alert alert-secondary mb-0">
+              <i class="bi bi-pause-circle me-2"></i><strong>Role Paused:</strong> The hiring partner is not currently taking submissions for this opening.
+            </div>
+          {% else %}
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+              <div>
+                <h5 class="fw-bold text-dark mb-1">Ready to Apply?</h5>
+                <p class="text-muted small mb-0">
+                  Your profile and resume 
+                  {% if profile.resume_filename %}
+                    (<a href="{{ url_for('student.download_resume', filename=profile.resume_filename) }}" target="_blank">view attached PDF</a>)
+                  {% else %}
+                    (<span class="text-danger fw-semibold">No resume uploaded yet</span>)
+                  {% endif %}
+                  will be submitted to {{ job.company.company_name }}.
+                </p>
+              </div>
+              <form method="POST" action="{{ url_for('student.apply_job', job_id=job.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}">
+                <button type="submit" class="btn btn-success btn-lg px-4 shadow-sm" onclick="return confirm('Confirm application submission for {{ job.title }}?');">
+                  <i class="bi bi-send-fill me-1"></i> Submit Application
+                </button>
+              </form>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

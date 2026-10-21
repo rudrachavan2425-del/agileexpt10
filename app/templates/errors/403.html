@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}Access Denied (403) | Placement Management System{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center text-center py-5">
+  <div class="col-md-6">
+    <div class="display-1 fw-bold text-danger mb-3">403</div>
+    <h3 class="fw-bold mb-3">Access Denied</h3>
+    <p class="text-muted mb-4">
+      You do not have administrative or authorization privileges to access this protected area.
+    </p>
+    <a href="{{ url_for('index') }}" class="btn btn-primary px-4">Return to Homepage</a>
+  </div>
+</div>
+{% endblock %}

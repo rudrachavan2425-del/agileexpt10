@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Students | Admin Portal{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h2 class="fw-bold mb-1">Student Candidates</h2>
+    <p class="text-muted small mb-0">Manage registered students, track academic standing, and toggle account activation</p>
+  </div>
+</div>
+
+<!-- Filters -->
+<div class="card p-3 mb-4 shadow-sm bg-white">
+  <form method="GET" class="row g-2 align-items-center">
+    <div class="col-md-5">
+      <select name="branch" class="form-select form-select-sm" onchange="this.form.submit()">
+        <option value="">All Academic Branches</option>
+        {% for b in branch_options %}
+          <option value="{{ b }}" {{ 'selected' if current_branch == b else '' }}>{{ b }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-5">
+      <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
+        <option value="">All Placement Statuses</option>
+        <option value="unplaced" {{ 'selected' if current_status == 'unplaced' else '' }}>Unplaced</option>
+        <option value="placed" {{ 'selected' if current_status == 'placed' else '' }}>Placed</option>
+      </select>
+    </div>
+    <div class="col-md-2 d-grid">
+      <a href="{{ url_for('admin.students') }}" class="btn btn-sm btn-outline-secondary">Reset</a>
+    </div>
+  </form>
+</div>
+
+<!-- Students Table -->
+<div class="card shadow-sm">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead>
+          <tr>
+            <th>Student Name & Roll No</th>
+            <th>Branch & Graduation</th>
+            <th>CGPA</th>
+            <th>Skills</th>
+            <th>Placement</th>
+            <th>Resume</th>
+            <th>Account</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for s in students %}
+            <tr>
+              <td>
+                <div class="fw-bold">{{ s.full_name }}</div>
+                <div class="small text-muted">{{ s.roll_number }} &bull; {{ s.user.email }}</div>
+              </td>
+              <td>
+                <div class="small fw-semibold">{{ s.branch }}</div>
+                <div class="small text-muted">Class of {{ s.graduation_year or 'N/A' }}</div>
+              </td>
+              <td>
+                <span class="badge {{ 'bg-success' if s.cgpa >= 8.5 else ('bg-primary' if s.cgpa >= 7.5 else 'bg-secondary') }} fs-6">
+                  {{ s.cgpa }}
+                </span>
+              </td>
+              <td>
+                <div class="small text-truncate" style="max-width: 220px;" title="{{ s.skills or 'None' }}">
+                  {{ s.skills or 'Not specified' }}
+                </div>
+              </td>
+              <td>
+                {% if s.placement_status == 'placed' %}
+                  <span class="badge bg-success-subtle text-success border border-success-subtle">
+                    <i class="bi bi-check-circle-fill me-1"></i> Placed
+                  </span>
+                {% else %}
+                  <span class="badge bg-secondary-subtle text-secondary">Unplaced</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if s.resume_filename %}
+                  <a href="{{ url_for('student.download_resume', filename=s.resume_filename) }}" target="_blank" class="btn btn-sm btn-outline-primary" title="View PDF Resume">
+                    <i class="bi bi-file-earmark-pdf"></i>
+                  </a>
+                {% else %}
+                  <span class="text-muted small">No file</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if s.user.is_active %}
+                  <span class="badge bg-success">Active</span>
+                {% else %}
+                  <span class="badge bg-secondary">Deactivated</span>
+                {% endif %}
+              </td>
+              <td class="text-end">
+                <form method="POST" action="{{ url_for('admin.toggle_student_status', student_id=s.id) }}" class="d-inline">
+                  <button type="submit" class="btn btn-sm {{ 'btn-outline-warning' if s.user.is_active else 'btn-outline-success' }}" title="{{ 'Deactivate student' if s.user.is_active else 'Activate student' }}">
+                    <i class="bi {{ 'bi-person-x' if s.user.is_active else 'bi-person-check' }}"></i>
+                  </button>
+                </form>
+              </td>
+            </tr>
+          {% else %}
+            <tr>
+              <td colspan="8" class="text-center py-4 text-muted">No students found matching the criteria.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

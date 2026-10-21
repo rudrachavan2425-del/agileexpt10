@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard | Placement Management System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h2 class="fw-bold mb-1">Administrative Overview</h2>
+    <p class="text-muted small mb-0">Placement Drive Operational & Placement Statistics</p>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="/metrics" target="_blank" class="btn btn-outline-primary btn-sm">
+      <i class="bi bi-graph-up me-1"></i> Prometheus Metrics
+    </a>
+    <a href="/health" target="_blank" class="btn btn-outline-success btn-sm">
+      <i class="bi bi-heart-pulse me-1"></i> Health Check
+    </a>
+  </div>
+</div>
+
+<!-- Key Stat Cards -->
+<div class="row g-3 mb-4">
+  <div class="col-sm-6 col-lg-3">
+    <div class="card stat-card h-100">
+      <div class="d-flex align-items-center justify-content-between">
+        <div>
+          <div class="text-muted small fw-semibold text-uppercase">Total Students</div>
+          <div class="fs-3 fw-bold mt-1">{{ total_students }}</div>
+        </div>
+        <div class="stat-icon bg-primary-subtle text-primary">
+          <i class="bi bi-people-fill"></i>
+        </div>
+      </div>
+      <div class="mt-2 text-muted small">
+        <a href="{{ url_for('admin.students') }}" class="text-decoration-none text-primary">View all students &rarr;</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-sm-6 col-lg-3">
+    <div class="card stat-card h-100">
+      <div class="d-flex align-items-center justify-content-between">
+        <div>
+          <div class="text-muted small fw-semibold text-uppercase">Hiring Companies</div>
+          <div class="fs-3 fw-bold mt-1">{{ total_companies }}</div>
+        </div>
+        <div class="stat-icon bg-success-subtle text-success">
+          <i class="bi bi-building"></i>
+        </div>
+      </div>
+      <div class="mt-2 text-muted small">
+        <a href="{{ url_for('admin.companies') }}" class="text-decoration-none text-success">Manage companies &rarr;</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-sm-6 col-lg-3">
+    <div class="card stat-card h-100">
+      <div class="d-flex align-items-center justify-content-between">
+        <div>
+          <div class="text-muted small fw-semibold text-uppercase">Active Jobs</div>
+          <div class="fs-3 fw-bold mt-1">{{ active_jobs }} <span class="fs-6 text-muted fw-normal">/ {{ total_jobs }}</span></div>
+        </div>
+        <div class="stat-icon bg-info-subtle text-info">
+          <i class="bi bi-briefcase-fill"></i>
+        </div>
+      </div>
+      <div class="mt-2 text-muted small">
+        <a href="{{ url_for('admin.jobs') }}" class="text-decoration-none text-info">Browse all jobs &rarr;</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-sm-6 col-lg-3">
+    <div class="card stat-card h-100">
+      <div class="d-flex align-items-center justify-content-between">
+        <div>
+          <div class="text-muted small fw-semibold text-uppercase">Placed Students</div>
+          <div class="fs-3 fw-bold mt-1 text-success">{{ placed_students }}</div>
+        </div>
+        <div class="stat-icon bg-success-subtle text-success">
+          <i class="bi bi-check2-circle"></i>
+        </div>
+      </div>
+      <div class="mt-2 text-muted small">
+        <span class="text-muted">Total Apps: {{ total_applications }}</span> &bull;
+        <a href="{{ url_for('admin.applications') }}" class="text-decoration-none">Review &rarr;</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Pending Approvals Section -->
+<div class="card mb-4">
+  <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+    <h5 class="fw-bold mb-0 text-dark">
+      <i class="bi bi-hourglass-split text-warning me-2"></i>Pending Company Approvals
+      {% if pending_companies %}
+        <span class="badge bg-warning text-dark ms-2">{{ pending_companies|length }}</span>
+      {% endif %}
+    </h5>
+    <a href="{{ url_for('admin.companies', status='pending') }}" class="btn btn-sm btn-outline-secondary">View Filtered</a>
+  </div>
+  <div class="card-body p-0">
+    {% if pending_companies %}
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead>
+            <tr>
+              <th>Company Name</th>
+              <th>Domain</th>
+              <th>Contact</th>
+              <th>Submitted Date</th>
+              <th class="text-end">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for c in pending_companies %}
+              <tr>
+                <td>
+                  <strong>{{ c.company_name }}</strong>
+                  {% if c.website %}
+                    <br><a href="{{ c.website }}" target="_blank" class="small text-muted text-decoration-none">{{ c.website }}</a>
+                  {% endif %}
+                </td>
+                <td>{{ c.industry or 'N/A' }}</td>
+                <td>{{ c.contact_person or c.user.email }}</td>
+                <td>{{ c.created_at.strftime('%Y-%m-%d') }}</td>
+                <td class="text-end">
+                  <form method="POST" action="{{ url_for('admin.approve_company', company_id=c.id) }}" class="d-inline">
+                    <button type="submit" class="btn btn-sm btn-success me-1">
+                      <i class="bi bi-check-lg"></i> Approve
+                    </button>
+                  </form>
+                  <form method="POST" action="{{ url_for('admin.reject_company', company_id=c.id) }}" class="d-inline">
+                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                      <i class="bi bi-x-lg"></i> Reject
+                    </button>
+                  </form>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="p-4 text-center text-muted">
+        <i class="bi bi-check-circle fs-3 text-success d-block mb-2"></i>
+        No company registrations pending approval! All partners are verified.
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Recent Applications Section -->
+<div class="card">
+  <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+    <h5 class="fw-bold mb-0 text-dark">
+      <i class="bi bi-journal-text text-primary me-2"></i>Recent Candidate Applications
+    </h5>
+    <a href="{{ url_for('admin.applications') }}" class="btn btn-sm btn-outline-primary">View All Applications</a>
+  </div>
+  <div class="card-body p-0">
+    {% if recent_applications %}
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead>
+            <tr>
+              <th>Applicant</th>
+              <th>Branch / CGPA</th>
+              <th>Job Position</th>
+              <th>Hiring Partner</th>
+              <th>Status</th>
+              <th>Applied Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for app in recent_applications %}
+              <tr>
+                <td>
+                  <strong>{{ app.student.full_name }}</strong>
+                  <div class="small text-muted">{{ app.student.roll_number }}</div>
+                </td>
+                <td>
+                  <span class="badge bg-light text-dark border">{{ app.student.branch }}</span>
+                  <span class="fw-semibold ms-1 text-primary">{{ app.student.cgpa }}</span>
+                </td>
+                <td><strong>{{ app.job.title }}</strong></td>
+                <td>{{ app.job.company.company_name }}</td>
+                <td>
+                  <span class="badge badge-status badge-{{ app.status }}">{{ app.status|capitalize }}</span>
+                </td>
+                <td>{{ app.applied_at.strftime('%Y-%m-%d %H:%M') }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="p-4 text-center text-muted">No applications submitted yet.</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

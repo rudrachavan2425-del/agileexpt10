@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+
+{% block title %}Recruiter Dashboard | {{ profile.company_name }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+  <div>
+    <div class="d-flex align-items-center gap-2">
+      <h2 class="fw-bold mb-0">{{ profile.company_name }}</h2>
+      {% if profile.approval_status == 'approved' %}
+        <span class="badge bg-success-subtle text-success border border-success-subtle"><i class="bi bi-patch-check-fill me-1"></i> Verified Partner</span>
+      {% elif profile.approval_status == 'pending' %}
+        <span class="badge bg-warning-subtle text-warning border border-warning-subtle"><i class="bi bi-clock me-1"></i> Pending Verification</span>
+      {% else %}
+        <span class="badge bg-danger-subtle text-danger border border-danger-subtle"><i class="bi bi-x-circle me-1"></i> Rejected</span>
+      {% endif %}
+    </div>
+    <p class="text-muted small mb-0">{{ profile.industry or 'Hiring Partner' }} &bull; {{ current_user.email }}</p>
+  </div>
+  <div>
+    {% if profile.is_approved() %}
+      <a href="{{ url_for('company.create_job') }}" class="btn btn-primary">
+        <i class="bi bi-plus-circle me-1"></i> Create New Job Posting
+      </a>
+    {% else %}
+      <button class="btn btn-secondary" disabled title="Account pending approval">
+        <i class="bi bi-lock me-1"></i> Post Job (Pending Approval)
+      </button>
+    {% endif %}
+  </div>
+</div>
+
+{% if not profile.is_approved() %}
+  <div class="alert alert-warning shadow-sm">
+    <div class="d-flex align-items-center">
+      <i class="bi bi-exclamation-triangle-fill fs-3 me-3"></i>
+      <div>
+        <h5 class="alert-heading fw-bold mb-1">Company Account Under Review</h5>
+        <p class="mb-0 small">Your company profile has been submitted and is awaiting administrative approval. Once approved, you can post open roles and review applications from top campus candidates.</p>
+      </div>
+    </div>
+  </div>
+{% endif %}
+
+<!-- Stats -->
+<div class="row g-3 mb-4">
+  <div class="col-sm-6 col-lg-3">
+    <div class="card stat-card h-100">
+      <div class="d-flex align-items-center justify-content-between">
+        <div>
+          <div class="text-muted small fw-semibold text-uppercase">Total Job Postings</div>
+          <div class="fs-3 fw-bold mt-1">{{ jobs|length }}</div>
+        </div>
+        <div class="stat-icon bg-primary-subtle text-primary">
+          <i class="bi bi-briefcase-fill"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-sm-6 col-lg-3">
+    <div class="card stat-card h-100">
+      <div class="d-flex align-items-center justify-content-between">
+        <div>
+          <div class="text-muted small fw-semibold text-uppercase">Applications Received</div>
+          <div class="fs-3 fw-bold mt-1">{{ total_applications }}</div>
+        </div>
+        <div class="stat-icon bg-info-subtle text-info">
+          <i class="bi bi-people-fill"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-sm-6 col-lg-3">
+    <div class="card stat-card h-100">
+      <div class="d-flex align-items-center justify-content-between">
+        <div>
+          <div class="text-muted small fw-semibold text-uppercase">Candidates Shortlisted</div>
+          <div class="fs-3 fw-bold mt-1 text-warning">{{ shortlisted_count }}</div>
+        </div>
+        <div class="stat-icon bg-warning-subtle text-warning">
+          <i class="bi bi-star-fill"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-sm-6 col-lg-3">
+    <div class="card stat-card h-100">
+      <div class="d-flex align-items-center justify-content-between">
+        <div>
+          <div class="text-muted small fw-semibold text-uppercase">Final Selections</div>
+          <div class="fs-3 fw-bold mt-1 text-success">{{ selected_count }}</div>
+        </div>
+        <div class="stat-icon bg-success-subtle text-success">
+          <i class="bi bi-check-circle-fill"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- My Jobs List -->
+<div class="card shadow-sm">
+  <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+    <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-list-task text-primary me-2"></i>My Job Postings</h5>
+    {% if profile.is_approved() %}
+      <a href="{{ url_for('company.create_job') }}" class="btn btn-sm btn-outline-primary">Post Role</a>
+    {% endif %}
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead>
+          <tr>
+            <th>Role Title & Location</th>
+            <th>Package</th>
+            <th>Min CGPA</th>
+            <th>Deadline</th>
+            <th>Applicants</th>
+            <th>Status</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for j in jobs %}
+            <tr>
+              <td>
+                <div class="fw-bold">{{ j.title }}</div>
+                <div class="small text-muted"><i class="bi bi-geo-alt me-1"></i>{{ j.location }}</div>
+              </td>
+              <td>
+                <span class="badge bg-success-subtle text-success fs-6 fw-bold border border-success-subtle">
+                  {{ j.package_lpa }} LPA
+                </span>
+              </td>
+              <td>
+                <span class="badge bg-light text-dark border">{{ j.min_cgpa }} CGPA</span>
+              </td>
+              <td>
+                <div class="small {{ 'text-danger fw-bold' if j.is_expired() else 'text-dark' }}">
+                  {{ j.deadline.strftime('%Y-%m-%d') }}
+                  {% if j.is_expired() %}
+                    <span class="badge bg-danger-subtle text-danger ms-1">Expired</span>
+                  {% endif %}
+                </div>
+              </td>
+              <td>
+                <a href="{{ url_for('company.applicants', job_id=j.id) }}" class="btn btn-sm btn-outline-primary position-relative">
+                  <i class="bi bi-people me-1"></i> View
+                  <span class="badge bg-primary text-white rounded-pill ms-1">{{ j.applications.count() }}</span>
+                </a>
+              </td>
+              <td>
+                {% if j.is_active and not j.is_expired() %}
+                  <span class="badge bg-success">Active</span>
+                {% elif not j.is_active %}
+                  <span class="badge bg-secondary">Paused</span>
+                {% else %}
+                  <span class="badge bg-danger">Closed</span>
+                {% endif %}
+              </td>
+              <td class="text-end">
+                <div class="d-inline-flex gap-1">
+                  <a href="{{ url_for('company.edit_job', job_id=j.id) }}" class="btn btn-sm btn-outline-secondary" title="Edit Job Details">
+                    <i class="bi bi-pencil"></i>
+                  </a>
+                  <form method="POST" action="{{ url_for('company.toggle_job', job_id=j.id) }}" class="d-inline">
+                    <button type="submit" class="btn btn-sm {{ 'btn-outline-warning' if j.is_active else 'btn-outline-success' }}" title="{{ 'Pause Applications' if j.is_active else 'Activate Job' }}">
+                      <i class="bi {{ 'bi-pause-circle' if j.is_active else 'bi-play-circle' }}"></i>
+                    </button>
+                  </form>
+                  <form method="POST" action="{{ url_for('company.delete_job', job_id=j.id) }}" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this job posting? All associated applications will also be deleted.');">
+                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete Job">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          {% else %}
+            <tr>
+              <td colspan="7" class="text-center py-4 text-muted">No job postings created yet. Click "Create New Job Posting" to start hiring!</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
