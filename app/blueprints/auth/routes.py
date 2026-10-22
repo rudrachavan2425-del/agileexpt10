@@ -32,10 +32,10 @@ def login():
 
             login_user(user, remember=form.remember_me.data)
             record_login(True)
-            flash(f'Welcome to PMS v3.0 - LIVE DEMO, {user.email}!', 'success')
-
+            flash(f'Welcome to Placement system v4.0 - LIVE DEMO, {user.email}!', 'success')
 
             next_page = request.args.get('next')
+
             if next_page and next_page.startswith('/'):
                 return redirect(next_page)
 
